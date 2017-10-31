@@ -1,0 +1,62 @@
+body {
+    background-color: #ECEFF1;
+}
+
+.auth {
+    margin-top: 50px;
+    text-align: center;
+}
+
+.logo {
+    text-align: center;
+    font-weight: 100;
+    font-size: 80px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+a.logo {
+    color: #5b5b5b;
+}
+
+a {
+    cursor: pointer;
+}
+
+.auth .card {
+    width: 400px;
+    margin: 0 auto;
+}
+
+@media screen and (max-width: 480px) {
+    .auth .card {
+        width: 100%;
+    }
+
+    .logo {
+        font-size: 60px;
+    }
+}
+
+.auth .header {
+    font-size: 18px;
+}
+
+.auth .row {
+    margin-bottom: 0px;
+}
+
+.auth .username {
+    margin-top: 0px;
+}
+
+.auth .btn {
+    width: 90%;
+}
+
+.auth .footer {
+    border-top: 1px solid #e9e9e9;
+    padding-bottom: 21px;
+}
