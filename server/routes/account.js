@@ -22,7 +22,7 @@ router.post('/signup', (req, res) => {
         })
     }
 
-    if(!req.body.password.length < 4 || typeof req.body.password !== 'string') {
+    if(req.body.password.length < 4 || typeof req.body.password !== 'string') {
         return res.status(400).json({
             error: 'BAD PASSWORD',
             code: 2

@@ -1,39 +1,48 @@
-import React from 'react'
+import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router'
 
-const loginButton = (
-    <li>
-        <Link to="/login">
-            <i className="material-icons">vpn_key</i>
-        </Link>
-    </li>
-)
+class Header extends Component {
+    constructor(props) {
+        super(props)
+    }
 
-const logoutButton = (
-    <li>
-        <a><i className="material-icons">lock_open</i></a>
-    </li>
-)
+    render() {
 
-const Header = (props) => {
-    return (
-        <nav>
-            <div className="nav-wrapper blue darken-1">
-                <Link to="/" className="brand-logo center">MEMOPAD</Link>
+        const loginButton = (
+            <li>
+                <Link to="/login">
+                    <i className="material-icons">vpn_key</i>
+                </Link>
+            </li>
+        )
 
-                <ul>
-                    <li><a><i className="material-icons">search</i></a></li>
-                </ul>
+        const logoutButton = (
+            <li>
+                <a onClick={this.props.onLogout}>
+                    <i className="material-icons">lock_open</i>
+                </a>
+            </li>
+        )
 
-                <div className="right">
+        return (
+            <nav>
+                <div className="nav-wrapper blue darken-1">
+                    <Link to="/" className="brand-logo center">MEMOPAD</Link>
+    
                     <ul>
-                        { props.isLoggedIn ? logoutButton : loginButton }
+                        <li><a><i className="material-icons">search</i></a></li>
                     </ul>
+    
+                    <div className="right">
+                        <ul>
+                            { this.props.isLoggedIn ? logoutButton : loginButton }
+                        </ul>
+                    </div>
                 </div>
-            </div>
-        </nav>
-    )
+            </nav>
+        )
+    }
 }
 
 Header.propTypes = {

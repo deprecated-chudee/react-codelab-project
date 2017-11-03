@@ -19,7 +19,7 @@ const devPort = 4000
 const db = mongoose.connection
 db.on('error', console.error)
 db.once('open', () => { console.log('Connected to mongodb server') })
-mongoose.connect('mongodb://localhost/codelab');
+mongoose.connect('mongodb://localhost/codelab')
 
 /* use session */
 app.use(session({

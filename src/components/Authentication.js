@@ -10,12 +10,56 @@ class Authentication extends Component {
             password: ''
         }
         this.handleChange = this.handleChange.bind(this)
+        this.handleLogin = this.handleLogin.bind(this)
+        this.handleRegister = this.handleRegister.bind(this)
+        this.handleKeyPress = this.handleKeyPress.bind(this)
     }
     
     handleChange(e) {
         let nextState = {}
         nextState[e.target.name] = e.target.value
         this.setState(nextState)
+    }
+
+    handleLogin() {
+        let id = this.state.username
+        let pw = this.state.password
+
+        this.props.onLogin(id, pw).then(
+            (success) => {
+                if(!success) {
+                    this.setState({
+                        password: ''
+                    })
+                }
+            }
+        )
+    }
+
+    handleRegister() {
+        let id = this.state.username
+        let pw = this.state.password
+
+        this.props.onRegister(id, pw).then(
+            (result) => {
+                if(!result) {
+                    this.setState({
+                        username: '',
+                        password: ''
+                    })
+                }
+            }
+        )
+    }
+
+    handleKeyPress(e) {
+        if(e.charCode == 13) {
+            if(this.props.mode) {
+                this.handleLogin()
+            } else {
+                this.handleRegister()
+            }
+        }
     }
 
     render () {
@@ -39,6 +83,7 @@ class Authentication extends Component {
                         className="validate"
                         onChange={this.handleChange}
                         value={this.state.password}
+                        onKeyPress={this.handleKeyPress}
                     />
                 </div>
             </div>
@@ -49,7 +94,11 @@ class Authentication extends Component {
                 <div className="card-content">
                     <div className="row">
                         {inputBoxes}
-                        <a className="waves-effect waves-light btn">SUBMIT</a>    
+                        <a className="waves-effect waves-light btn"
+                            onClick={this.handleLogin}
+                        >
+                            SUBMIT
+                        </a>    
                     </div>
                 </div>
         
@@ -69,7 +118,12 @@ class Authentication extends Component {
             <div className="card-content">
                 <div className="row">
                     {inputBoxes}
-                    <a className="waves-effect waves-light btn">CREATE</a>
+                    <a 
+                        className="waves-effect waves-light btn"
+                        onClick={this.handleRegister}
+                    >
+                        CREATE
+                    </a>
                 </div>
             </div>
         );
@@ -82,8 +136,8 @@ class Authentication extends Component {
                         <div className="card-content"> 
                             { this.props.mode ? "LOGIN" : "REGISTER" }
                         </div>
-                        { this.props.mode ? loginView : registerView }
                     </div>
+                    { this.props.mode ? loginView : registerView }
                 </div>
             </div>
         );
