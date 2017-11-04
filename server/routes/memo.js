@@ -168,12 +168,60 @@ router.delete('/:id', (req, res) => {
 
 router.get('/', (req, res) => {
     Memo.find()
-    .sort({"_id": -1})
-    .limit(6)
-    .exec((err, memos) => {
-        if(err) throw err
-        res.json(memos)
-    })
+        .sort({ _id: -1})
+        .limit(6)
+        .exec((err, memos) => {
+            if(err) throw err
+            res.json(memos)
+        })
 })
+
+/**
+ *  READ ADDITIONAL (OLD/NEW) MEMO: GET /api/memo/:listType/:id
+ */
+router.get('/:listType/:id', (req, res) => {
+    let listType = req.params.listType
+    let id = req.params.id
+
+    // CHECK LIST TYPE VALIDITY
+    if(listType !== 'old' && listType !== 'new') {
+        return res.status(400).json({
+            error: 'INVALID LISTTYPE',
+            code: 1
+        })
+    }
+
+    // CHECK MOMO ID VALIDITY
+    if(!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({
+            error: 'INVALID ID',
+            code: 2
+        })
+    }
+
+    let objId = new mongoose.Types.ObjectId(req.params.id)
+
+    if(listType === 'new') {
+        // GET NEWER MEMO
+        Memo.find({ _id: { $gt: objId }})
+            .sort({ _id: -1})
+            .limit(6)
+            .exec((err, memos) => {
+                if(err) throw err
+                return res.json(memos)
+            })
+    } else {
+        // GET OLDER MEMO
+        Memo.find({ _id: { $lt: objId }})
+            .sort({ _id: -1 })
+            .limit(6)
+            .exec((err, memos) => {
+                if(err) throw err
+                return res.json(memos)
+            })
+    }
+
+})
+
 
 export default router
