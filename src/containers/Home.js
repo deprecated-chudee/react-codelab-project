@@ -1,17 +1,26 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Write, MemoList } from 'components'
-import { memoPostRequest, memoListRequest } from 'actions/memo'
+import { 
+    memoPostRequest, 
+    memoListRequest, 
+    memoEditRequest, 
+    memoRemoveRequest,
+    memoStarRequest
+} from 'actions/memo'
 
 class Home extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            loadingState: false
+            loadingState: false,
         }
         this.handlePost = this.handlePost.bind(this)
         this.loadNewMemo = this.loadNewMemo.bind(this)
         this.loadOldMemo = this.loadOldMemo.bind(this)
+        this.handleEdit = this.handleEdit.bind(this)
+        this.handleRemove = this.handleRemove.bind(this)
+        this.handleStar = this.handleStar.bind(this)
     }
 
     componentDidMount() {
@@ -148,6 +157,118 @@ class Home extends Component {
         )
     }
 
+    handleEdit(id, index, contents) {
+        return this.props.memoEditRequest(id, index, contents).then(
+            () => {
+                if(this.props.editStatus === 'SUCCESS') {
+                    Materialize.toast('Success!', 2000)
+                } else {
+                    /**
+                     *  ERROR CODES
+                     *      1. INVALID ID
+                     *      2. EMPTY CONTENTS
+                     *      3. NOT LOGGED IN
+                     *      4. NO RESOURCE
+                     *      5. PERMISSION FAILURE
+                     */
+
+                    let errorMessage = [
+                        'Something broke',
+                        'Please write soemthing',
+                        'You are not logged in',
+                        'That memo does not exist anymore',
+                        'You do not have permission'
+                    ]
+
+                    let error = this.props.editStatus.error
+
+                    // NOTIFY ERROR
+                    let $toastContents = $('<span style="color: #FFB4BA">' + errorMessage[error - 1] + '</span>')
+                    Materialize.toast($toastContents, 2000)
+
+                    // IF NOT LOGGED IN, REFRESH THE PAGE AFTER 2 SECONDS
+                    if(error === 3) {
+                        setTimeout(() => { location.reload(false) }, 2000)
+                    }
+                }
+            }
+        )
+    }
+
+    handleRemove(id, index) {
+        this.props.memoRemoveRequest(id, index).then(
+            () => {
+                if(this.props.removeStatus.status === 'SUCCESS') {
+                    console.log(this.props.removeStatus)
+                    // LOAD MORE MEMO IF THERE IS NO SCROLLBAR
+                    // 1 SECONDS LATER (ANIMATION TAKES 1SEC)
+                    setTimeout(() => {
+                        if($("body").height() < $(window).height()) {
+                            this.loadOldMemo()
+                        }
+                    }, 1000)
+                } else {
+                    /**
+                     *  DELETE MEMO: DELETE /api/memo/:id
+                     *  ERROR CODES
+                     *      1. INVALID ID
+                     *      2. NOT LOGGED IN
+                     *      3. NO RESOURCE
+                     *      4. PERMISSION FAILURE
+                     */
+
+                    let errorMessage = [ 
+                        'Something broke',
+                        'You are not logged in',
+                        'That memo does not exist',
+                        'You do not have permission'
+                    ]
+
+                    // NOTIFY ERROR 
+                    let $toastContents = $('<span style="color: #FFB4BA">' + errorMessage[this.props.removeStatus.error - 1] +  '</span>')
+                    Materialize.toast($toastContents, 2000)
+
+                    // IF NOT LOGGED IN, REFRESH THE PAGE
+                    if(this.props.removeStatus.error === 2) {
+                        setTimeout(() => {location.reload(false)}, 2000)
+                    }
+                }
+            }
+        )
+    }
+
+    handleStar(id, index) {
+        this.props.memoStarRequest(id, index).then(
+            () => {
+                if(this.props.starStatus.status !== 'SUCCESS') {
+                    /**
+                     *  TOGGLES STAR OF MEMO: POST /api/memo/star/:id
+                     *  ERROR CODES
+                     *      1. INVALID ID
+                     *      2. NOT LOGGED IN
+                     *      3. NO RESOURCE
+                     */
+
+                    let errorMessage = [
+                        'Something broke',
+                        'You are not logged in',
+                        'That memo does not exist'
+                    ]
+
+                    // NOTIFY ERROR
+                    let $toastContent = $('<span style="color: #FFB4BA">' + errorMessage[this.props.starStatus.error - 1] + '</span>')
+                    Materialize.toast($toastContent, 2000)
+    
+    
+                    // IF NOT LOGGED IN, REFRESH THE PAGE
+                    if(this.props.starStatus.error === 2) {
+                        setTimeout(()=> {location.reload(false)}, 2000)
+                    }
+                }
+            }
+        )
+    }
+
     render() {
         const write = ( <Write 
                             onPost={this.handlePost} 
@@ -158,7 +279,13 @@ class Home extends Component {
         return (
             <div className="wrapper">
                 { this.props.isLoggedIn ? write : undefined }
-                <MemoList data={this.props.memoData} currentUser={this.props.currentUser} />
+                <MemoList 
+                    data={this.props.memoData} 
+                    currentUser={this.props.currentUser} 
+                    onEdit={this.handleEdit}
+                    onRemove={this.handleRemove}
+                    onStar={this.handleStar}
+                />
             </div>
         );
     }
@@ -171,7 +298,10 @@ const mapStateToProps = (state) => {
         currentUser: state.authentication.status.currentUser,
         memoData: state.memo.list.data,
         listStatus: state.memo.list.status,
-        isLast: state.memo.list.isLast
+        isLast: state.memo.list.isLast,
+        editStatus: state.memo.edit.status,
+        removeStatus: state.memo.remove,
+        starStatus: state.memo.star
     }
 }
 
@@ -182,6 +312,15 @@ const mapDispatchToProps = (dispatch) => {
         },
         memoListRequest: (isInitial, listType, id, username) => {
             return dispatch(memoListRequest(isInitial, listType, id, username))
+        },
+        memoEditRequest: (id, index, contents) => {
+            return dispatch(memoEditRequest(id, index, contents))
+        },
+        memoRemoveRequest: (id, index) => {
+            return dispatch(memoRemoveRequest(id, index))
+        },
+        memoStarRequest: (id, index) => {
+            return dispatch(memoStarRequest(id, index))
         }
     }
 }
